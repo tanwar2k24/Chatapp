@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+
+<!--
+  MQTT.Cool - https://mqtt.cool
+  Welcome Page
+-->
+
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>Welcome to MQTT.Cool</title>
+  <link rel="stylesheet" type="text/css" href="welcome_res/css/fonts.css">
+  <link rel="stylesheet" type="text/css" href="welcome_res/css/index.css" />
+</head>
+
+<body>
+  <div id="wrap1">
+    <div class="contents">
+      <div id="welcome">Welcome</div>
+      <div id="logo">
+        <a href="https://mqtt.cool" target="_blank">
+        <img src="welcome_res/img/logo.png" border="0" width="250" />
+      </a>
+      </div>
+      <div id="welcomeMsg">
+        Connecting to MQTT.Cool...
+      </div>
+    </div>
+  </div>
+
+  <div id="wrap2">
+    <div class="contents">
+      <div id="exampleIntro">
+        Explore MQTT.Cool source code examples on GitHub
+      </div>
+
+      <div class="examplesRow">
+        <div class="exampleBox">
+          <a class="exampleLink" href="https://github.com/MQTTCool/MQTT.Cool-example-Hello_IoT_World-client-javascript" target="_blank">
+            <div class="header">Hello IoT World</div>
+            <img class="screenshot" src="welcome_res/img/example_1.png" />
+          </a>
+        </div>
+
+        <div class="exampleBox">
+          <a class="exampleLink" href="https://github.com/MQTTCool/MQTT.Cool-example-Chat-client-javascript" target="_blank">
+            <div class="header">Basic Chat</div>
+            <img class="screenshot" src="welcome_res/img/example_2.png" />
+          </a>
+        </div>
+
+        <div class="exampleBox">
+          <a class="exampleLink" href="https://github.com/MQTTCool/MQTT.Cool-example-Auth-client-javascript" target="_blank">
+            <div class="header">Authentication &amp; Authorization</div>
+            <img class="screenshot" src="welcome_res/img/example_3.png" />
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="wrap3">
+    <div class="contents">
+      <div id="monitorIntro">
+        Your MQTT.Cool server includes an awesome Monitoring Dashboard. Why don't you check it out right now?
+      </div>
+
+      <div id="monitorImgContainer">
+        <a class="button" onclick="return checkURL()" href="/dashboard/" target="_blank">
+        <img id="monitorBack" src="./welcome_res/img/monitors-empty.png">
+        <img id="monitorFront" src="./welcome_res/img/monitors-contents.png">
+      </a>
+      </div>
+
+      <div class="buttonContainer">
+        <a class="button" onclick="return checkURL('Monitoring Dashboard')" href="/dashboard/" target="_blank">
+        <input class="launchButton" id="monitorButton" type="submit" value="Launch Monitoring Dashboard ►" />
+        </a>
+      </div>
+
+      <div class="buttonContainer">
+        <a class="button" onclick="return checkURL('Test Client')" href="/test_client/" target="_blank">
+        <input class="launchButton" id="testClientButton" type="submit" value="Launch Test Client ►" />
+        </a>
+      </div>
+
+
+
+
+    </div>
+  </div>
+
+  <script src="welcome_res/lib/require.js"></script>
+  <script src="welcome_res/lib/lightstreamer-core.min.js"></script>
+  <script src="welcome_res/lib/index.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,1 @@
+mc.bat restart

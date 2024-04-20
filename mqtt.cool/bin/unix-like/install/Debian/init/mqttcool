@@ -1,0 +1,76 @@
+#! /bin/sh
+### BEGIN INIT INFO
+# Provides:          mqttcool
+# Required-Start:    $network
+# Required-Stop:     $network
+# Should-Start:
+# Should-Stop:
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: MQTT.Cool Server
+# Description:       MQTT.Cool Server - https://mqtt.cool
+### END INIT INFO
+
+set -e
+
+# MQTT.Cool specific settings
+# MC_HOME=/opt/mqtt.cool
+MC_HOME=%MC_HOME%
+# MC_USER=mqttcool
+MC_USER=%MC_USER%
+# MC_GROUP=mqttcool
+MC_GROUP=%MC_GROUP%
+
+DAEMON="${MC_HOME}/bin/unix-like/mc.sh"
+PIDFILE=/var/run/mqttcool.pid
+
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+DESC="MQTT.Cool Server"
+NAME="MQTT.Cool"
+
+STOP_TIMEOUT=${STOP_TIMEOUT-10}
+
+test -x $DAEMON || exit 0
+
+. /lib/lsb/init-functions
+
+d_start() {
+    start-stop-daemon --start --make-pidfile \
+        --pidfile "${PIDFILE}" --oknodo \
+        --background --user ${MC_USER} --group ${MC_GROUP} \
+        --exec "${DAEMON}" -- run
+}
+
+d_stop() {
+    start-stop-daemon --stop --pidfile "${PIDFILE}" --retry "${STOP_TIMEOUT}" --oknodo
+}
+
+
+case "$1" in
+  start)
+    log_daemon_msg "Starting ${DESC}" "${NAME}"
+    d_start
+    log_end_msg $?
+    ;;
+  stop)
+    log_daemon_msg "Stopping ${DESC}" "${NAME}"
+    d_stop
+    log_end_msg $?
+    ;;
+  restart|force-reload)
+    log_daemon_msg "Restarting ${DESC}" "${NAME}"
+    d_stop
+    d_start
+    log_end_msg $?
+    ;;
+  status)
+    status_of_proc -p "${PIDFILE}" "${DAEMON}" "${NAME}" && exit 0 || exit $?
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart|force-reload|status}" >&2
+    exit 1
+    ;;
+esac
+
+exit 0
+

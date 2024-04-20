@@ -1,0 +1,32 @@
+[
+  {
+    "host": "broker.mqtt.cool",
+    "protocol": "tcp",
+    "port": "1883",
+    "connType": "shared"
+  },
+  {
+    "host": "test.mosquitto.org",
+    "protocol": "tcp",
+    "port": "1883",
+    "connType": "shared"
+  },
+  {
+    "host": "broker.hivemq.com",
+    "protocol": "tcp",
+    "port": "1883",
+    "connType": "shared"
+  },
+  {
+    "host": "iot.eclipse.org",
+    "protocol": "tcp",
+    "port": "1883",
+    "connType": "shared"
+  },
+  {
+    "host": "localhost",
+    "protocol": "tcp",
+    "port": "1883",
+    "connType": "shared"
+  }
+]

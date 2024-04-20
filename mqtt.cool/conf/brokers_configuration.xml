@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- Do not remove this line. File tag: mqtt.cool_brokers_config-2.1.0. -->
+
+<mqttcool_brokers_config>
+
+    <!-- Optional. Fully qualified class name of a hook with purpose of
+         authentication and authorization of users. Must implement the
+         MqttCoolHook interface.
+         See docs for more information. -->
+    <!--  
+    <hook_class>my.package.MyHook</hook_class>
+     -->
+
+    <configurations>
+
+        <!-- A configuration for a target MQTT broker is given by the set of
+             parameters used to establish the connection. Each configuration is
+             uniquely identified by a connection alias, which will be then used
+             by the clients to specify the MQTT broker to connect to.
+             It is also possible to define multiple configurations (to the same
+             or different brokers).
+
+             The name of each single parameter must be expressed in the
+             following form:
+
+             <param name="<connection_alias>.<connection_param>">...</param>
+
+             where:
+             - <connection_alias> is the alias which identifies the configuration
+             - <connection_param> is the specific connection parameter to set.
+
+             For example, to define a configuration for a Mosquitto instance, it
+             could be possible to use the connection alias "mosquitto" and then
+             specify all related parameters as follows:
+
+             <param name="mosquitto.server_address">...</param>
+             <param name="mosquitto.connnection_timeout">...</param>
+             <param name="mosquitto.keep_alive">...</param>
+
+             and so on.
+
+             In the same way, a configuration for a VerneMQ instance could be
+             defined as follows:
+
+             <param name="vernemq.server_address">...</param>
+             <param name="vernemq.connnection_timeout">...</param>
+             <param name="vernemq.keep_alive">...</param>
+
+             where "vernemq" is the alias of choice.
+
+             The following are examples of configurations. -->
+
+        <!--
+          =====================================
+          CONFIGURATION EXAMPLE FOR "Mosquitto"
+          =====================================
+        -->
+        <!-- Mandatory. The address of the MQTT broker to connect to.
+             Accepted URI forms are:
+               - tcp://<host>:<port>
+               - mqtt://<host>:<port>
+               - mqtts://<host>:<port>
+               - ssl://<host>:<port>
+               
+             Note that the use of "mqtts" and "ssl" triggers encrypted
+             communication with the MQTT broker. Therefore, further parameters
+             might be required in order to properly support the secure channel.
+             See below "security_protocol", "truststore_path",
+             "truststore_password", "keystore_path", "keystore_password", and
+             "private_key_password". -->
+        <param name="mosquitto.server_address">tcp://localhost:1883</param>
+
+        <!-- Optional. Client Id prefix to be used for shared connections. If
+             the clients want to share a single connection, then a randomly
+             generated suffix will be appended to generate a unique ClientId for
+             opening the physical connection toward the MQTT broker. Uniqueness
+             of the ClientId is mandatory as multiple shared connections may
+             exist for the same broker.
+             Default: MQTT_Cool. -->
+        <param name="mosquitto.clientid_prefix">mosquitto_client</param>
+
+        <!-- Optional. The connection timeout expressed in seconds.
+             Default: 5. -->
+        <param name="mosquitto.connection_timeout">30</param>
+
+        <!-- Optional. The keep alive interval expressed in seconds.
+             Default: 30. -->
+        <param name="mosquitto.keep_alive">10</param>
+
+        <!-- Optional. The username for authenticating with the MQTT broker. The
+             value that may be provided by the client will take precedence over
+             this setting. -->
+        <!--
+        <param name="mosquitto.username">username</param>
+        -->
+
+        <!-- Optional. The password for authenticating with the MQTT broker. The
+             value that may be provided by the client will take precedence over
+             this setting. -->
+        <!--
+        <param name="mosquitto.password">password</param>
+        -->
+
+        <!-- Optional. The payload of the Will Message, which is interpreted
+             on the basis of the "will_message_format" parameter.
+             The Will Message and related parameters (as defined below) are
+             processed only in the case of dedicated connections.
+             The Will Message and related parameters that may be provided by
+             the client will take precedence over the corresponding settings.
+             -->
+        <!--
+        <param name="mosquitto.will_message">will_message</param>
+        -->
+
+        <!-- Optional. As the CONNECT Control Packet will contain just a
+             sequence of raw bytes for the Will Message, this setting specifies
+             how to interpret the payload provided through the "will_message"
+             parameter in order to give the opportunity to supply either a
+             string or binary sequence.
+             Specify:
+             - "UTF-8" to interpret the text as a regular string, which will
+                then be encoded into the final sequence of bytes using the UTF-8
+                character set.
+             - "base64" to interpret the text as a Base64 encoded string, which
+                will then be decoded accordingly to make the final sequence of
+                bytes.
+             Default: UTF-8. -->
+        <!--
+        <param name="mosquitto.will_message_format">base64</param>
+        -->
+
+        <!-- Mandatory if "will_message" is defined. The topic name of the
+             Will Message. Must be at least 1 character in length. -->
+        <!--
+        <param name="mosquitto.will_topic">will_topic</param>
+        -->
+
+        <!-- Optional, but considered only if "will_message" is defined. The QoS
+             integer value of the Will Message.
+             Default: 0. -->
+        <!--
+        <param name="mosquitto.will_qos">1</param>
+        -->
+
+        <!-- Optional, but considered only if "will_message" is defined. The
+             retain flag of the Will Message.
+             Default: false. -->
+        <!--
+        <param name="mosquitto.will_retain">true</param>
+        -->
+
+        <!-- Optional. Sets the log interval (expressed in milliseconds) at
+             which basic statistics (e.g., number of brokers, number of client
+             connections, current upstream and downstream message frequency,
+             etc.) are logged through the "MQTTCoolLogger.statistics" logger
+             defined in <MQTT.COOL_HOME>/conf/log_configuration.xml.
+             This same statistics are accessible through the JMX interface.
+             If 0, basic statistics are not logged.
+             Default: 0. -->
+        <!--
+        <param name="mosquitto.basic_statistics_log_interval">5</param>
+        -->
+
+        <!--  Optional, but considered only if a secure schema is used in
+              "server_address". The protocol to be used in the case of encrypted
+              connection to the broker.
+              Default: TLSv1.2. -->
+        <!--
+        <param name="mosquitto.security_protocol">TLSv1.1</param>
+        -->
+        
+        <!--  Optional, but considered only if a secure schema is used in
+              the "server_address". The path to the JKS truststore relative to
+              the "conf" folder.
+              The truststore contains the MQTT broker certificate to trust.
+              If no truststore is specified, then a default one is determined
+              according to the JSSE Reference Guide
+              (https://docs.oracle.com/javase/7/docs/technotes/guides/security/jsse/JSSERefGuide.html).
+              -->
+        <!--
+        <param name="mosquitto.truststore_path">trust-store.jks</param>
+        -->
+
+        <!--  Mandatory if "truststore_path" is defined. The password for the
+              truststore. -->
+        <!--
+        <param name="mosquitto.truststore_password">mytruststorepassword</param>
+        -->
+
+        <!--  Optional, but considered only if a secure schema is used in
+              the "server_address". The path to the JKS keystore relative to
+              the "conf" folder.
+              The keystore contains the client certificate and the private key
+              to be used in the case the target MQTT broker requires client
+              authentication.
+              If no keystore is specified, then a default one is determined
+              according to the JSSE Reference Guide
+              (https://docs.oracle.com/javase/7/docs/technotes/guides/security/jsse/JSSERefGuide.html).
+              -->
+        <!--
+        <param name="mosquitto.keystore_path">keystore.jks</param>
+        -->
+
+        <!--  Mandatory if "keystore_path" is defined. The password for the
+              keystore. -->
+        <!--
+        <param name="mosquitto.keystore_password">mykeystorepassword</param>
+        -->
+
+        <!--  Mandatory if "keystore_path" is defined. The password for the
+              private key stored into the keystore. -->
+        <!--
+        <param name="mosquitto.private_key_password">myprivatekeypassword</param>
+        -->
+
+        <!--
+          ====================================
+          CONFIGURATION EXAMPLE FOR "VerneMQ"
+          ====================================
+        -->
+        <!-- MQTT broker connection parameters for a local instance of the
+             "VerneMQ" broker, listening on port 1883. See above. -->
+        <param name="vernemq1.server_address">tcp://localhost:1883</param>
+        <param name="vernemq1.clientid_prefix">vernemq1_client</param>
+        <param name="vernemq1.connection_timeout">1</param>
+        <param name="vernemq1.keep_alive">30</param>
+
+
+        <!--
+          ====================================================
+          CONFIGURATION EXAMPLE FOR "VerneMQ" on remote address
+          ====================================================
+        -->
+        <!-- MQTT broker connection parameters for a remote instance of the
+             "VerneMQ" broker, listening on port 1883 of the (fictitious)
+             address "remote_broker.com". See above. -->
+        <param name="vernemq2.server_address">tcp://myhost.com:1883</param>
+        <param name="vernemq2.clientid_prefix">vernemq2_client</param>
+        <param name="vernemq2.connection_timeout">4</param>
+        <param name="vernemq2.keep_alive">20</param>
+
+
+        <!--
+          =========================================================
+          CONFIGURATION EXAMPLE FOR THE "Mosquitto Test server"
+          =========================================================
+        -->
+        <!-- MQTT broker connection parameters for plain connection to the
+             publicly accessible instance of the "Mosquitto" broker.
+             See above. -->
+        <param name="public-mosquitto.server_address">tcp://test.mosquitto.org:1883</param>
+        <param name="public-mosquitto.clientid_prefix">mosquitto_client</param>
+        <param name="public-mosquitto.connection_timeout">10</param>
+        <param name="public-mosquitto.keep_alive">30</param>
+
+
+        <!--
+          =============================================================================
+          CONFIGURATION EXAMPLE FOR ENCRYPTED CONNECTION TO THE "Mosquitto Test server"
+          =============================================================================
+        -->
+        <!-- MQTT broker connection parameters for encrypted connections to the
+             publicly accessible instance of the "Mosquitto" broker.
+             See above. -->
+        <param name="public-tls-mosquitto.server_address">ssl://test.mosquitto.org:8883</param>
+        <param name="public-tls-mosquitto.clientid_prefix">mosquitto_client</param>
+        <param name="public-tls-mosquitto.connection_timeout">10</param>
+        <param name="public-tls-mosquitto.keep_alive">30</param>
+        <param name="public-tls-mosquitto.truststore_path">mosquitto_truststore_example.jks</param>
+        <param name="public-tls-mosquitto.truststore_password">password</param>
+
+
+        <!--
+          ========================================================================================================
+          CONFIGURATION EXAMPLE FOR ENCRYPTED CONNECTION WITH CLIENT AUTHENTICATION TO THE "Mosquitto Test server"
+          ========================================================================================================
+        -->
+        <!-- MQTT broker connection parameters for encrypted connection to the
+             publicly accessible instance of the "Mosquitto" broker, with 
+             client authentication. See above. -->
+        <param name="public-tls-client-auth-mosquitto.server_address">ssl://test.mosquitto.org:8884</param>
+        <param name="public-tls-client-auth-mosquitto.clientid_prefix">mosquitto_client</param>
+        <param name="public-tls-client-auth-mosquitto.connection_timeout">10</param>
+        <param name="public-tls-client-auth-mosquitto.keep_alive">30</param>
+        <param name="public-tls-client-auth-mosquitto.truststore_path">mosquitto_truststore_example.jks</param>
+        <param name="public-tls-client-auth-mosquitto.truststore_password">password</param>
+        <param name="public-tls-client-auth-mosquitto.keystore_path">mosquitto_keystore_example.jks</param>
+        <param name="public-tls-client-auth-mosquitto.keystore_password">password</param>
+        <param name="public-tls-client-auth-mosquitto.private_key_password">clientpass</param>
+
+        <!--
+          ====================================================
+          CONFIGURATION EXAMPLE FOR THE "HiveMQ Public Broker"
+          ====================================================
+        -->
+        <!-- MQTT broker connection parameters for the "HiveMQ Public Broker".
+             See above. -->
+        <param name="public-hivemq.server_address">tcp://broker.hivemq.com:1883</param>
+        <param name="public-hivemq.clientid_prefix">hivemq_client</param>
+        <param name="public-hivemq.connection_timeout">10</param>
+        <param name="public-hivemq.keep_alive">15</param>
+
+        <!--
+          ====================================================
+          CONFIGURATION EXAMPLE FOR THE "Eclipse IoT" SANDBOX
+          ====================================================
+        -->
+        <!-- MQTT broker connection parameters for the "Mosquitto" instance of
+             the "Eclipse IoT" sandbox. See above. -->
+        <param name="eclipse-iot.server_address">tcp://iot.eclipse.org:1883</param>
+        <param name="eclipse-iot.clientid_prefix">eclipseiot_client</param>
+        <param name="eclipse-iot.connection_timeout">15</param>
+        <param name="eclipse-iot.keep_alive">8</param>
+
+    </configurations>
+
+</mqttcool_brokers_config>

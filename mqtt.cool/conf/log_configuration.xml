@@ -1,0 +1,501 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Do not remove this line. File tag: mqtt.cool_log_configuration-2.1.0. -->
+
+<configuration scan="true" scanPeriod="10 seconds">
+
+  <!--
+    A custom StatusListener used to log the internal status of Logback.
+    This custom implementation is similar to the standard OnConsoleStatusListener
+    implementation but will only log WARN and ERROR messages from Logback's internal
+    status and will log on the standard error instead of logging on the standard output.
+  -->
+  <StatusListener class="com.lightstreamer.logback.Logging$OnConsoleErrorWarningStatusListener" />
+
+  <!--
+    This Appender is provided by Lightstreamer Kernel.
+    It has to be used in addition to other Appenders in order to make
+    log messages available to the internal Monitoring Data Adapter.
+    Generic Appender configuration elements are supported,
+    but for message formatting instructions, which are ignored.
+  -->
+  <appender name="LSProducer" class="com.lightstreamer.logback.ProducerAppender">
+    <!--
+    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+      <level>warn</level>
+    </filter>
+    -->
+  </appender>
+
+  <!--
+    Typical configuration of file Appenders for log messages.
+
+    This configuration takes advantage of a useful extension of Logback
+    native Appender RollingFileAppender provided by Lightstreamer Kernel.
+    The com.lightstreamer.logback.RelativeFileAppenders$RollingFileAppender
+    Appender behaves like the native one, but resolves relative file name
+    specifications by starting from the directory containing this
+    configuration file.
+    The com.lightstreamer.logback.RelativeFileAppenders$FileAppender Appender
+    is also available.
+
+    Note that the log file names used for different logback appenders should
+    be different.
+  -->
+  <appender name="MQTTCoolRolling" class="com.lightstreamer.logback.RelativeFileAppenders$RollingFileAppender">
+    <!--
+    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+      <level>info</level>
+    </filter>
+    -->
+    <File>../logs/mqtt.cool.log</File>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <!-- daily rollover -->
+      <fileNamePattern>../logs/mqtt.cool.log.%d{yyyy-MM-dd}</fileNamePattern>
+    </rollingPolicy>
+    <encoder>
+      <pattern>%d{"dd-MMM-yy HH:mm:ss,SSS"}|%-5.5(%p%marker)|%-40.40c|%-27.27t|%m%n</pattern>
+    </encoder>
+  </appender>
+
+  <appender name="LSRolling" class="com.lightstreamer.logback.RelativeFileAppenders$RollingFileAppender">
+    <!--
+    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+      <level>info</level>
+    </filter>
+    -->
+    <File>../logs/ls.log</File>
+
+    <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+      <FileNamePattern>../logs/ls.log.%i</FileNamePattern>
+      <MinIndex>1</MinIndex>
+      <MaxIndex>5</MaxIndex>
+    </rollingPolicy>
+
+    <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+      <MaxFileSize>1024KB</MaxFileSize>
+    </triggeringPolicy>
+
+    <encoder>
+      <pattern>%d{"dd.MMM.yy HH:mm:ss,SSS"} &lt;%5.5(%p%marker)&gt; %m%n</pattern>
+    </encoder>
+  </appender>
+
+  <appender name="LSDailyRolling" class="com.lightstreamer.logback.RelativeFileAppenders$RollingFileAppender">
+    <!--
+    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+      <level>info</level>
+    </filter>
+    -->
+    <File>../logs/Lightstreamer.log</File>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <!-- daily rollover -->
+      <fileNamePattern>../logs/Lightstreamer.log.%d{yyyy-MM-dd}</fileNamePattern>
+    </rollingPolicy>
+    <encoder>
+      <pattern>%d{"dd-MMM-yy HH:mm:ss,SSS"}|%-5.5(%p%marker)|%-19.19c{19}|%-27.27t|%m%n</pattern>
+    </encoder>
+  </appender>
+
+  <appender name="LSConsole" class="ch.qos.logback.core.ConsoleAppender">
+    <!--
+    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+      <level>debug</level>
+    </filter>
+    -->
+    <encoder>
+      <pattern>%d{"dd.MMM.yy HH:mm:ss,SSS"} &lt;%5.5(%p%marker)&gt; %m%n</pattern>
+    </encoder>
+  </appender>
+
+  <!--
+    The following is the base logger of all logging messages printed by
+    MQTT.Cool.
+
+    Messages logged at INFO level report all major activities like start up,
+    connection and disconnection to/from MQTT brokers, subscription and
+    unsubscription to/from topics, message publishing, and so on.
+
+    Messages logged at DEBUG level typically report the beginning of each major
+    activity. They should not be enabled with production load levels.
+
+    No useful messages are logged at TRACE level. The level is reserved for
+    debug versions of MQTT.Cool.
+
+    Messages logged at WARN level notify of recoverable or otherwise non fatal
+    exceptions, like connection and subscription issues.
+
+    Messages logged at ERROR level notify of unexpected exceptions that could
+    point to a severe problem and should be inspected.
+  -->
+  <logger name="MQTTCoolLogger" level="INFO">
+    <appender-ref ref="MQTTCoolRolling" />
+  </logger>
+
+  <!--
+    The following is the base logger used to log statistics at INFO level.
+    Statistics must be explicitly enabled to be generated, through the
+    "basic_statistics_log_interval" parameter of the specific connection alias.
+
+    This logger provides subloggers named after each connection alias,
+    e.g. "MQTTCoolLogger.statistics.mosquitto".
+  -->
+  <logger name="MQTTCoolLogger.statistics" level="INFO"/>
+
+  <!-- logging of initialization activities  -->
+  <!-- at ERROR level, details about unrecoverable errors are reported -->
+  <!-- at INFO level, a message for every initialized configuration is reported -->
+  <!-- at DEBUG level, initialization details and all configuration settings are
+       reported -->
+  <logger name="MQTTCoolLogger.init" level="INFO">
+    <appender-ref ref="LSConsole" />
+   </logger>
+
+  <!-- logging of static and dynamic MQTT broker configurations management -->
+  <!-- at WARN level, an issue is reported each time the Hook does not provide
+       a valid MQTT broker configuration when resolving an alias required by
+       the clients -->
+  <!-- at INFO level, a message for every registered MQTT broker configuration
+       (either static or provided by the Hook) is reported-->
+  <!-- at DEBUG level, details about registration and retrieval of all kind of
+       MQTT broker configuration (static, dynamic, and provided by the Hook)
+       are reported -->
+  <logger name="MQTTCoolLogger.mqttServerConfig" level="ERROR"/>
+
+  <!-- logging of Hook calls -->
+  <!-- at WARN level, details about issues related to authorization or
+       notification of operations are reported -->
+  <!-- at INFO level, all Hook calls are logged -->
+  <!-- at DEBUG level, the beginning of each call is logged -->
+  <logger name="MQTTCoolLogger.hook" level="ERROR"/>
+
+  <!-- logging of management of the MQTT connection -->
+  <!-- at WARN level, details about issues related to connections with
+       external MQTT brokers are reported -->
+  <!-- at INFO level, details about major life cycle events of connection with
+       external MQTT brokers, like opening requests, start up, outcomes, closing
+       requests, and shut down, are reported -->
+  <!-- at DEBUG level, the beginning of each event is reported -->
+  <logger name="MQTTCoolLogger.connections" level="ERROR"/>
+
+  <!-- logging of activities related to TLS/SSL handshake -->
+  <!-- at WARN level, details about issues like abort, incoming or outgoing data
+       unavailability, inbound or outbound closing are reported -->
+  <!-- at INFO level, details about major handshake events, like beginning,
+       completion (along with the protocol and the cipher suite used), and
+       shut down, are reported -->
+  <!-- at DEBUG level, the beginning of each major handshake event is reported
+       -->
+  <logger name="MQTTCoolLogger.connections.ssl" level="ERROR"/>
+
+  <!-- logging of MQTT Control Packets -->
+  <!-- at DEBUG level, all MQTT Control Packets exchanged between the MQTT.Cool
+       server and external MQTT brokers are reported -->
+  <logger name="MQTTCoolLogger.protocol" level="INFO"/>
+
+  <!-- logging of management of the MQTT subscriptions -->
+  <!-- at WARN level, failed subscriptions to external MQTT brokers are reported
+       -->
+  <!-- at INFO level, details about major lifecycle events on subscriptions,
+       like submission, outcome, and unsubscription, are reported -->
+  <!-- at DEBUG level, the beginning of each event as well as details about
+       dispatching of MQTT messages from external MQTT brokers are reported -->
+  <logger name="MQTTCoolLogger.subscriptions" level="ERROR"/>
+
+  <!-- logging of messages published by the clients -->
+  <!-- at INFO level, messages sent by the clients for being published to
+       external MQTT brokers, as well as related delivery notifications (on the
+       basis of QoS level), are reported -->
+  <!-- at DEBUG level, the beginning of publishing submission is reported -->
+  <logger name="MQTTCoolLogger.publish" level="WARN"/>
+
+  <!-- logging of parsing and processing of MQTT Control Packets received from
+       the clients -->
+  <!-- at WARN level, unexpected received messages are reported -->
+  <!-- at DEBUG level, details of MQTT Control Packets elaboration are dumped.
+       In the case of shared connection, only PUBLISH event is visible, as all
+       other MQTT requests and replies are managed through native Lightstreamer
+       subscriptions -->
+  <logger name="MQTTCoolLogger.mqttOverLS.received" level="ERROR"/>
+
+  <!-- logging of MQTT events to be sent to the clients -->
+  <!-- at DEBUG, all real-time MQTT events to be sent to the clients like MQTT
+       Control Packets, as well as updates related to the connection status with
+       external MQTT brokers and the delivery of published messages, are dumped
+       -->
+  <logger name="MQTTCoolLogger.mqttOverLS.sending" level="INFO"/>
+
+
+
+  <!--
+    NOTE ON CUSTOM EXTENSIONS:
+    You can configure custom appenders, or filters, or other extensions,
+    provided that you add your own jars and/or third party jars to the
+    proper ClassLoader. Look for "logging_lib_path" in the launch script.
+  -->
+
+
+
+  <!--
+    The following is the base logger of all logging messages printed by
+    Lightstreamer Kernel (with a few exceptions).
+
+    Messages logged at INFO level notify major server activities,
+    like session starting and ending. If these messages are enabled,
+    they are also supplied to the internal MONITOR data adapter,
+    together with WARN and ERROR messages.
+
+    Messages logged at DEBUG level notify minor operations
+    and all data flow inside the Server. They should not be enabled
+    with production load levels.
+    No useful messages are logged at TRACE level. The level is reserved
+    for debug versions of the Server.
+
+    Severe ERROR messages are logged with a "FATAL" marker; in fact, a FATAL
+    level is not natively supported by logback.
+    Thanks to the marker, these messages can be filtered through logback's
+    MarkerFilter.
+    By the factory pattern configuration, FATAL is logged instead of ERROR
+    for these messages (note the tricky "%-5.5(%p%marker)" pattern).
+  -->
+  <logger name="LightstreamerLogger" level="INFO">
+    <appender-ref ref="LSDailyRolling" />
+    <!--<appender-ref ref="LSRolling" />-->
+    <!--<appender-ref ref="LSConsole" />-->
+    <appender-ref ref="LSProducer" />
+      <!-- must be set in order to send log messages to internal MONITOR provider -->
+  </logger>
+
+
+
+  <!--
+    These two loggers are used by the internal monitoring system to log
+    load statistics at INFO level.
+    LightstreamerMonitorText logs statistics with a human-readable syntax;
+    LightstreamerMonitorTAB logs statistics with a CSV syntax.
+
+    The frequency of the samples produced by the internal monitoring system
+    is governed by the <collector_millis> configuration element.
+    However, a resampling to lower frequencies can be performed, based on the
+    level specified for each logger; in particular:
+      at TRACE level, all samples are logged;
+      at DEBUG level, one sample out of 10 is logged;
+      at INFO level, one sample out of 60 is logged;
+      at a higher level, no log is produced.
+    The resampling behavior can be changed at runtime, by changing the level;
+    however, if the level is set to ERROR on startup, the logger will be
+    disabled throughout the life of the Server, regardless of further changes.
+
+    When resampling is in place, note that, for each displayed sample, values
+    that are supposed to be averaged over a timeframe still refer to the
+    current sample's timeframe (based on <collector_millis>); however, values
+    that are supposed to be the maximum over all timeframes refer also to the
+    samples that were not displayed.
+    On the other hand, delta statistics, like "new connections", are always
+    collected starting from the previous logged sample.
+  -->
+  <logger name="LightstreamerMonitorText" level="INFO">
+    <appender-ref ref="LSDailyRolling" />
+  </logger>
+  <logger name="LightstreamerMonitorTAB" level="ERROR">
+    <appender-ref ref="LSDailyRolling" />
+  </logger>
+
+
+
+  <!--
+    The following subloggers are used to separate logging messages in families
+  -->
+
+  <!-- logging of system components initialization -->
+  <!-- at DEBUG level, initialization details, error details and all configuration
+       settings are reported -->
+  <logger name="LightstreamerLogger.init" level="INFO">
+    <appender-ref ref="LSConsole" />
+  </logger>
+
+  <!-- logging of license check phase -->
+  <!-- at DEBUG level, check details and error details can be found in case
+       of license check failure -->
+  <logger name="LightstreamerLogger.license" level="INFO">
+    <appender-ref ref="LSConsole" />
+  </logger>
+
+  <!-- logging of background activities and related configuration and issues -->
+  <logger name="LightstreamerLogger.kernel" level="INFO"/>
+
+  <!-- logging of external services activity -->
+  <!-- at DEBUG level, details on external services activities and configuration,
+       as well as details on connectivity issues, are reported. -->
+  <logger name="LightstreamerLogger.external" level="INFO" />
+
+  <!-- logging of activity and issues in connection management -->
+  <logger name="LightstreamerLogger.io" level="WARN"/>
+
+  <!-- logging of activity and issues in TLS configuration -->
+  <logger name="LightstreamerLogger.io.ssl" level="WARN"/>
+
+  <!-- logging of client request dispatching -->
+  <!-- at DEBUG level, request processing details are reported -->
+  <!-- All log from this logger and its subloggers reports the IP and port of the involved connection -->
+  <logger name="LightstreamerLogger.connections" level="WARN"/>
+
+  <!-- logging of issues related to TLS/SSL configuration and handshake management -->
+  <!-- at DEBUG level, details on the cipher suites are reported -->
+  <logger name="LightstreamerLogger.connections.ssl" level="WARN"/>
+
+  <!-- logging of client request interpretation issues -->
+  <!-- at WARN level, each time a request contains an unexpected HTTP header,
+     which the Server refuses or ignores, a notification is reported
+     that an interpretation error is possible -->
+  <!-- at INFO level, details upon request refusals are reported -->
+  <!-- at DEBUG level, details for all requests and responses are reported -->
+  <logger name="LightstreamerLogger.connections.http" level="ERROR"/>
+
+  <!-- logging of details for issues related to requests over WebSockets -->
+  <!-- at DEBUG level, details for all requests and responses are reported -->
+  <logger name="LightstreamerLogger.connections.WS" level="WARN"/>
+
+  <!-- logging of issues related to information received via the proxy protocol,
+     when enabled -->
+  <!-- at DEBUG level, details of all information received are reported -->
+  <logger name="LightstreamerLogger.connections.proxy" level="INFO"/>
+
+  <!-- logging of internal web server activity; it also logs requests of
+     static resources related to push requests -->
+  <!-- at DEBUG level, error details are reported -->
+  <!-- All log from this logger and its subloggers reports the IP and port of the involved connection -->
+  <logger name="LightstreamerLogger.webServer" level="WARN"/>
+
+  <!-- logging of request management related to the JMX Tree feature -->
+  <!-- at DEBUG level, error details are reported -->
+  <logger name="LightstreamerLogger.webServer.jmxTree" level="WARN"/>
+
+  <!-- logging of parsing and elaboration of client requests -->
+  <!-- at DEBUG level, client request details are reported -->
+  <!-- All log from this logger and its subloggers reports the IP and port of the involved connection -->
+  <logger name="LightstreamerLogger.requests" level="INFO"/>
+
+  <!-- logging of elaboration of client polling requests -->
+  <logger name="LightstreamerLogger.requests.polling" level="WARN"/>
+
+  <!-- logging of elaboration of client message requests -->
+  <!-- at DEBUG level, details on the message forwarding are reported -->
+  <logger name="LightstreamerLogger.requests.messages" level="INFO"/>
+
+  <!-- logging of Data Adapters interactions -->
+  <!-- at DEBUG level, details on subscription operations are reported -->
+  <logger name="LightstreamerLogger.subscriptions" level="INFO"/>
+
+  <!-- logging of events coming from the Data Adapters -->
+  <!-- at DEBUG level, all update events are dumped -->
+  <logger name="LightstreamerLogger.subscriptions.upd" level="INFO"/>
+
+  <!-- logging of events preprocessing stage -->
+  <!-- at DEBUG level, events dispatched to ItemEventBuffers are dumped -->
+  <logger name="LightstreamerLogger.preprocessor" level="INFO"/>
+
+  <!-- logging of internal thread management and events dispatching -->
+  <logger name="LightstreamerLogger.scheduler" level="INFO"/>
+
+  <!-- logging of InfoPump and ItemEventBuffers internal activity -->
+  <!-- at DEBUG level, updates to be sent to the clients are dumped -->
+  <logger name="LightstreamerLogger.pump" level="INFO"/>
+
+  <!-- logging of management of messages received from the clients -->
+  <!-- at DEBUG level, details of message processing are logged -->
+  <!-- All log from this logger reports the IP and port of the involved connection -->
+  <logger name="LightstreamerLogger.pump.messages" level="INFO"/>
+
+  <!-- logging of socket write activity -->
+  <!-- at DEBUG level, all socket writes are dumped -->
+  <!-- All log from this logger reports the IP and port of the involved connection -->
+  <logger name="LightstreamerLogger.push" level="INFO"/>
+
+  <!-- logging of JavaScript client messages -->
+  <!-- at DEBUG level, log messages sent by the Web and Node.js Client Libraries
+       are logged. Remote logging must be enabled on the client side. -->
+  <!-- All log from this logger reports the IP and port of the involved connection -->
+  <logger name="LightstreamerLogger.webclient" level="DEBUG"/>
+
+  <!-- logging of JMX setup issues -->
+  <!-- at DEBUG level, JMX connectors initialization details are logged. -->
+  <logger name="LightstreamerLogger.monitoring" level="INFO"/>
+
+
+
+  <!--
+    The following logger logs healthcheck request processing at INFO level.
+    The logger does not inherit from "LightstreamerLogger" in order
+    to simplify sending the log to a dedicated appender.
+    All log from this logger reports the IP and port of the involved connection.
+  -->
+  <logger name="LightstreamerHealthCheck" level="INFO">
+    <appender-ref ref="LSDailyRolling" />
+  </logger>
+
+
+
+  <!--
+    Log from third-party libraries used internally by the Server.
+    All the log produced by these libraries is routed, by keeping the category names,
+    to the JDK's java.util.logging system first, then routed to Logback.
+    Hence, this log can be consumed by defining the loggers below.
+
+    If, for any reason, it is required that the configuration of the java.util.logging
+    system for some of these categories is done elsewhere, then the mappings done here
+    can be disabled at startup, by just removing or commenting out the corresponding
+    loggers below, or by setting them to level OFF.
+    Disabling the mapping may also prevent inefficiency for heavy loggers.
+  -->
+
+  <!--
+    These loggers are related to other third-party libraries used internally
+    by the Server.
+  -->
+  <logger name="org.apache.http" level="ERROR">
+    <appender-ref ref="LSDailyRolling" />
+  </logger>
+  <logger name="com.github.markusbernhardt.proxy" level="WARN">
+    <appender-ref ref="LSDailyRolling" />
+  </logger>
+  <logger name="org.restlet" level="ERROR">
+    <appender-ref ref="LSDailyRolling" />
+  </logger>
+  <logger name="org.jminix" level="ERROR">
+    <appender-ref ref="LSDailyRolling" />
+  </logger>
+  <logger name="common.jmx.velocity" level="ERROR">
+    <appender-ref ref="LSDailyRolling" />
+  </logger>
+  <logger name="com.turo" level="ERROR">
+    <appender-ref ref="LSDailyRolling" />
+  </logger>
+  <logger name="com.google" level="ERROR">
+    <appender-ref ref="LSDailyRolling" />
+  </logger>
+
+  <!--
+    These loggers are related to JDK services.
+  -->
+  <logger name="javax.management.remote" level="ERROR">
+    <appender-ref ref="LSDailyRolling" />
+  </logger>
+  <logger name="javax.management.mbeanserver" level="ERROR">
+    <appender-ref ref="LSDailyRolling" />
+  </logger>
+  <logger name="com.sun.jmx.remote" level="ERROR">
+    <appender-ref ref="LSDailyRolling" />
+  </logger>
+  <logger name="javax.net.ssl" level="OFF">
+    <!-- this also requires that the JVM property javax.net.debug is set as an empty string (supported since java 9) -->
+    <appender-ref ref="LSDailyRolling" />
+  </logger>
+
+  <!--
+    Setting properties in the root logger is not needed, as all log
+    messages fall in one of the loggers defined above.
+  -->
+  <root>
+  </root>
+
+</configuration>

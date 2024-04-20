@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<!--
+  MQTT.Cool - https://mqtt.cool
+
+  Test Client v1.2.0
+
+  Copyright (c) Lightstreamer Srl
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+       http://www.apache.org/licenses/LICENSE-2.0
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=yes">
+  <title>MQTT.Cool Test Client</title>
+
+  <link rel="stylesheet" href="css/all.css">
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/client.css">
+
+  <script src="js/lib/jquery.min.js"></script>
+  <script src="js/lib/bootstrap.bundle.min.js"></script>
+
+  <script src="js/lib/mqtt.cool.js"></script>
+  <script src="js/client.js"></script>
+</head>
+
+<body vlink="#6c21b1" link="#0000ee" bgcolor="#ffffff" bottommargin="0" leftmargin="0" topmargin="0" marginwidth="0"
+  marginheight="0">
+  <div id="header">
+    <div id="titlebar">
+      <div id="title">
+        <div style="float: left; color:#2a6373; padding-top: 18px">
+          <i class="fas fa-laptop fa-3x"></i>
+        </div>
+        <div id="toptitle">
+          </i>Test Client</div>
+        <div style="float:right; padding-top: 20px;">
+          <a href="https://mqtt.cool">
+            <img border="0" alt="MQTT.Cool" src="img/logo_white.png" width="250">
+          </a>
+        </div>
+      </div>
+    </div>
+    <div id="titlebarsep"></div>
+  </div>
+
+  <!-- The spinner appearing while connecting to servers -->
+  <div id="loaderModal" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-sm" role="document">
+      <div class="modal-content bg-light text-dark">
+        <div class="modal-body row">
+          <div class="col-2 mr-3">
+            <i id="spinner" class="fas fa-sync-alt fa-2x fa-fw"></i>
+          </div>
+          <div class="col-8">
+            <p id="loaderMessage"></p>
+          </div>
+        </div>
+
+        <!-- Modal footer -->
+        <div id="loaderFooter" style='display: none' class="modal-footer">
+          <button id="closeLoaderBtn" type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- The modal dialog for error messages. -->
+  <div id="errorModal" class="modal fade">
+    <div class="modal-dialog modal-sm">
+      <div class="modal-content">
+
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <h6 id="errorModalTitle" class="modal-title">Error</h6>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+
+        <!-- Modal body -->
+        <div class="modal-body" id="errorModalMessage">
+          Modal body.
+        </div>
+
+        <!-- Modal footer -->
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Close</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- The modal dialog for confirmation messages. -->
+  <div class="modal fade" id="confirmModal">
+    <div class="modal-dialog modal-sm">
+      <div class="modal-content">
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <h6 id="confirmModalTitle" class="modal-title">Confirm</h6>
+          <button id="iconCloseBtn" type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+
+        <!-- Modal body -->
+        <div class="modal-body" id="confirmModalMessage">
+          Modal body.
+        </div>
+
+        <!-- Modal footer -->
+        <div class="modal-footer">
+          <button id="closeBtn" type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Close</button>
+          <button id="confirmBtn" type="button" class="btn btn-primary btn-sm" data-dismiss="modal">Confirm</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- The modal dialog for customization of connection parameters. -->
+  <div class="modal fade" id="connectionModal">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <h6 id="connectionModalTitle" class="modal-title"></h6>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+
+        <!-- Modal body -->
+        <div class="modal-body" id="confirmModalMessage">
+          <form id="connectionParameters" novalidate>
+            <div class="form-row">
+              <div class="form-group col-2">
+                <label for="protocol" class="col-form-label">Protocol</label>
+                <select class="form-control" id="protocol" placeholder="The protocol">
+                  <option value="tcp" selected>tcp</option>
+                  <option value="ssl">ssl</option>
+                </select>
+                <div class="invalid-feedback">
+                  Please select a protocol
+                </div>
+              </div>
+
+              <div class="form-group col-6">
+                <label for="host" class="col-form-label">Host</label>
+                <input type="text" class="form-control" id="host" placeholder="The broker host">
+                <div class="invalid-feedback">
+                  Please provide a valid host
+                </div>
+              </div>
+
+              <div class="form-group col-3">
+                <label for="port" class="col-form-label">Port</label>
+                <input type="text" class="form-control" id="port" placeholder="The broker TCP port">
+                <div class="invalid-feedback">
+                  Please provide a valid TCP port
+                </div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group col-6">
+                <label for="username" class="col-form-label">Username</label>
+                <input type="text" class="form-control" id="username" placeholder="The username">
+                <div class="invalid-feedback">Please insert the username</div>
+              </div>
+
+              <div class="form-group col-6">
+                <label for="password" class="col-form-label">Password</label>
+                <input type="text" class="form-control" id="password" placeholder="The password">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <div class="form-check form-check-inline">
+                <label class="form-check-label">
+                  <input id="sharedConnection" class="form-check-input" name="connectionType" type="radio">Shared
+                  Connection
+                </label>
+              </div>
+              <div class="form-check form-check-inline">
+                <label class="form-check-label">
+                  <input id="dedicatedConnection" class="form-check-input" name="connectionType" type="radio">Dedicated
+                  Connection
+                </label>
+              </div>
+            </div>
+
+            <div id="dedicatedConnectionPars" class="collapse">
+              <div class="form-row">
+                <div class="form-group col-9">
+                  <label for="clientId" class="col-form-label">ClientID</label>
+                  <input type="text" class="form-control" id="clientId" placeholder="The client identifier">
+                  <div class="invalid-feedback">
+                    Please provide a client identifier
+                  </div>
+                </div>
+
+                <div class="col-3">
+                  <div class="form-check">
+                    <label class="form-check-label">
+                      <input id="cleanSession" class="form-check-input" name="connectionType" type="checkbox"
+                        checked>Clean Session
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group col-md-6">
+                  <label for="willTopic">Will Topic</label>
+                  <input id="willTopic" type="text" class="form-control"
+                    placeholder="The destination of the will message"
+                    aria-label="Write here the destination of the message">
+                  <div class="invalid-feedback">
+                    Please provide a topic
+                  </div>
+                </div>
+
+                <div class="form-group col-md-3">
+                  <label for="willQos">Will QoS</label>
+                  <select class="form-control" id="willQos" placeholder="QoS">
+                    <option value="0" selected>0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                  </select>
+                </div>
+
+                <div class="form-group col-md-3 align-self-start">
+                  <div class="form-check">
+                    <label class="form-check-label">
+                      <input id="willRetain" class="form-check-input" type="checkbox" value="">Will Retain
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group col-md-12">
+                  <label for="willgMessage">Will Message</label>
+                  <textarea id="willMessage" class="form-control" row="5" placeholder="The will message text to be sent"
+                    aria-label="Write here the message to be sent"></textarea>
+                  <div class="invalid-feedback">
+                    Please provide a message payload
+                  </div>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- Modal footer -->
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Close</button>
+          <button id="confirmParametersBtn" type="button" class="btn btn-primary btn-sm" data-dismiss="modal">Save
+            changes</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Container for toasts -->
+  <div id="toastContainer"></div>
+
+  <!-- Start Main container -->
+  <div id="main" class="container p-0">
+
+    <!-- Connection Card -->
+    <div id="connection" class="card">
+
+      <div class="card-header pl-1 pt-2 pb-2 pr-1 d-flex justify-content-between">
+        <h6>Connection</h6>
+        <div class="d-flex">
+          <!--<h6 class="font-weight-normal align-self-center">-->
+          <div id="currentBroker" class="font-weight-normal align-self-center">
+          </div>
+          <button id="statusBtn" type="button" class="btn switch-off" disabled>
+            <span class="fas fa-circle text-danger"></span>
+          </button>
+          <button id="disconnectBtn" type="button" class="btn btn-secondary btn-sm" disabled>
+            <span class="fas fa-power-off"></span>
+          </button>
+        </div>
+      </div>
+
+      <div id="selectBroker" class="card-body collapse">
+        <div class="form-inline">
+          <label for="broker">Select a Broker</label>
+          <select class="form-control ml-2 mr-1" id="broker">
+          </select>
+          <button type="button" id="configureBtn" class="btn btn-primary btn-sm ml-0" data-toggle="modal"
+            data-target="#connectionModal" data-toggle="tooltip" data-placement="top"
+            title="Configure the broker connection">
+            <span class="fas fa-cog"></span>
+          </button>
+
+          <button type="button" id="connectBtn" class="btn btn-primary btn-sm ml-2">Connect</button>
+
+          <button type="button" id="addConnectionBtn" class="btn btn-primary btn-sm ml-2" data-toggle="modal"
+            data-target="#connectionModal" data-toggle="tooltip" data-placement="top"
+            title="Add a new broker connection">
+            <span class="fas fa-plus-circle"></span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Start Operations -->
+    <div id="operations" class="collapse">
+
+      <div class="row m-0">
+        <div class="col-6 d-flex-column p-0 pr-1">
+
+          <!-- Subscriptions Card -->
+          <div class="card">
+            <div class="card-body p-1">
+              <div class="card-title">
+                <h6>Subscriptions</h6>
+              </div>
+              <form id="subscriptionsForm" class="d-flex m-0 justify-content-between" novalidate>
+                <div class="row w-100 m-0">
+                  <div class="col-8 p-0 mr-2">
+                    <input id="subscribingTopic" type="text" class="form-control" placeholder="The topic filter
+     " aria-label="The topic filter" required>
+                    <div class="invalid-feedback">
+                      Please provide a topic filter
+                    </div>
+                  </div>
+
+                  <select class="form-control col-3" id="subscribingQos" placeholder="QoS">
+                    <option value="0" selected>QoS 0</option>
+                    <option value="1">QoS 1</option>
+                    <option value="2">QoS 2</option>
+                  </select>
+
+                </div>
+                <input type="button" class="btn btn-primary btn-sm align-self-start" id="subscribeBtn"
+                  value="Subscribe">
+              </form>
+
+              <div class="card mt-3 mr-0 ml-0" id="subscribed">
+                <div class="card-header p-0">Subscribed topics</div>
+                <div class="card-body p-0">
+                  <div id="topicListContainer" style="height: 8rem; overflow-y: auto">
+                    <div id="topicList" class="list-group w-100">
+                      <div id="subscriptionItem" class="list-group-item d-flex flex-row justify-content-between p-0"
+                        style="display:none !important">
+                        <div class="d-flex w-100 flex-row justify-content-between">
+                          <div class="sub_topic"></div>
+                          <div>
+                            <span class="badge badge-info badge-pill sub_qos"></span>
+                          </div>
+                        </div>
+                        <button type="button" class="btn btn-light">
+                          <span class="fas fa-times-circle"></span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Publish Card -->
+          <div class="card">
+            <div class="card-body p-1">
+              <h6 class="card-title">Publish</h6>
+              <form id="publishForm" novalidate>
+                <div class="row w-100 m-0">
+                  <div class="col-6 p-0 mr-2">
+                    <input id="publishingTopic" type="text" class="form-control"
+                      placeholder="The destination of the message"
+                      aria-label="Write here the destination of the message" required>
+                    <div class="invalid-feedback">
+                      Please provide a topic
+                    </div>
+                  </div>
+
+                  <select class="form-control col-3 mr-2" id="publishingQos" placeholder="QoS">
+                    <option value="0" selected>QoS 0</option>
+                    <option value="1">QoS 1</option>
+                    <option value="2">QoS 2</option>
+                  </select>
+
+                  <div class="form-check col-2">
+                    <label class="form-check-label">
+                      <input id="publishingRetain" class="form-check-input" type="checkbox" value="">Retain
+                    </label>
+                  </div>
+
+                </div>
+
+                <div class="row mt-1">
+                  <div class="col-12">
+                    <textarea id="publishingMessage" class="form-control" row="5"
+                      placeholder="The message text to be sent" aria-label="Write here the message to be sent"
+                      required></textarea>
+                    <div class="invalid-feedback">
+                      Please provide a message payload
+                    </div>
+                  </div>
+                </div>
+
+              </form>
+              <div class="d-flex flex-row-reverse mt-2">
+                <button id="publishBtn" type="button" class="btn btn-primary btn-sm">Publish</button>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="col-6 p-0 pl-1">
+          <!-- Messages List Card -->
+          <div class="card h-100">
+            <div class="card-body p-1 d-flex flex-column">
+              <h6 class="card-title">Messages</h6>
+              <div id="messageListContainer" class="container p-0 border" style="height: 22rem; overflow-y: auto">
+                <div id="messageList" class="list-group">
+                  <!-- Used as starting template for a new message row -->
+                  <div id="message" style="display: none !important"
+                    class="list-group-item d-flex flex-column align-items-start">
+                    <div class="d-flex w-100 justify-content-between">
+                      <div>
+                        <small class="msg_timestamp"></small>
+                        <small>
+                          <span class="badge badge-primary badge-pill msg_topic"></span>
+                        </small>
+                      </div>
+                      <div>
+                        <span class="badge badge-info badge-pill msg_qos"></span>
+                        <span class="badge badge-warning badge-pill msg_retained"></span>
+                      </div>
+                    </div>
+                    <p class="mb-1 msg_payload"></p>
+                  </div>
+                </div>
+              </div>
+              <div class="d-flex mt-auto p-1">
+                <button id="clearMessagesBtn" type="button" class="ml-auto btn btn-primary btn-sm" data-toggle="tooltip"
+                  data-placement="left" title="Clear message list" disabled>
+                  <span class="fas fa-trash-alt"></span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+    <!-- End Operations -->
+    <div id="registrationContainer">
+  <!-- Registration Form -->
+  <form id="registrationForm">
+    <div class="form-group">
+      <label for="username">Username:</label>
+      <input type="text" class="form-control" id="username" placeholder="Enter username" required>
+    </div>
+    <div class="form-group">
+      <label for="password">Password:</label>
+      <input type="password" class="form-control" id="password" placeholder="Enter password" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Register</button>
+  </form>
+</div>
+
+  </div>
+  <!-- End Main container-->
+
+</body>
+
+</html>

@@ -1,0 +1,101 @@
+#!/bin/sh
+#
+# $FreeBSD: $
+#
+
+# PROVIDE: mqttcool
+# REQUIRE: LOGIN
+# KEYWORD: shutdown
+
+#
+# Configuration settings for mqttcool in /etc/rc.conf:
+#
+# mqttcool_enable (bool):
+#   Set to "NO" by default.
+#   Set it to "YES" to enable mqttcool
+#
+
+mqttcool_enable="${mqttcool_enable:-"NO"}"
+mqttcool_user=%MC_USER%
+mqttcool_group=%MC_GROUP%
+mqttcool_home="%MC_HOME%"
+mqttcool_daemon="${mqttcool_home}/bin/unix-like/mc.sh"
+
+. /etc/rc.subr
+
+name="mqttcool"
+rcvar=`set_rcvar`
+pidfile="/var/run/mqttcool.pid"
+
+load_rc_config "${name}"
+
+command="/usr/sbin/daemon"
+
+start_precmd="pid_touch"
+stop_cmd="mqttcool_stop"
+status_cmd="mqttcool_status"
+start_cmd="mqttcool_start"
+
+pid_touch() {
+    touch "${pidfile}"
+    chown "${mqttcool_user}" "${pidfile}"
+}
+
+mqttcool_start() {
+    rc_pid=$(mqttcool_get_pidfile $pidfile)
+    if [ -n "${rc_pid}" ]; then
+        echo "${name} already running? (check ${pidfile})."
+        return 1
+    fi
+    "${mqttcool_daemon}" run > /dev/null &
+    echo $! > "${pidfile}"
+    if [ "${?}" = "0" ]; then
+        echo "${name} started."
+    else
+        echo "${name} not started."
+        return 1
+    fi
+}
+
+mqttcool_stop() {
+    rc_pid=$(mqttcool_get_pidfile ${pidfile})
+
+    if [ -z "${rc_pid}" ]; then
+        [ -n "${rc_fast}" ] && return 0
+        echo "${name} not running? (check ${pidfile})."
+        return 1
+    fi
+
+    echo "Stopping ${name}."
+    kill -TERM "${rc_pid}" 2> /dev/null && echo "Terminated."
+    rm -f ${pidfile}
+}
+
+mqttcool_status() {
+    rc_pid=$(mqttcool_get_pidfile ${pidfile})
+    if [ -n "${rc_pid}" ]; then
+        echo "${name} is running as pid $rc_pid."
+    else
+        echo "${name} is not running."
+        return 1
+    fi
+}
+
+mqttcool_get_pidfile() {
+    _pidfile=$1
+    if [ -z "$_pidfile" ]; then
+        err 3 'USAGE: mqttcool_check_pidfile pidfile'
+    fi
+    if [ ! -f $_pidfile ]; then
+        debug "pid file ($_pidfile): not readable."
+        return
+    fi
+    read _pid _junk < $_pidfile
+    if [ -z "$_pid" ]; then
+        debug "pid file ($_pidfile): no pid in file."
+        return
+    fi
+    echo -n $_pid
+}
+
+run_rc_command "$1"

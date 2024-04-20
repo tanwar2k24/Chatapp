@@ -1,0 +1,50 @@
+#!/sbin/sh
+
+. /lib/svc/share/smf_include.sh
+
+# MQTT.Cool specific settings
+# MC_HOME=/opt/mqtt.cool
+MC_HOME=%MC_HOME%
+
+PIDFILE="${MC_HOME}/mqttcool.pid"
+DAEMON="${MC_HOME}/bin/unix-like/mc.sh"
+cd "${MC_HOME}"
+
+ls_kill() {
+    mypid=""
+    if [ -f "${PIDFILE}" ]; then
+        mypid=$(cat "${PIDFILE}")
+    fi
+    if [ -n "${mypid}" ]; then
+        kill -TERM "${mypid}" 2> /dev/null
+    fi
+    rm -f "${PIDFILE}"
+}
+
+case "$1" in
+start)
+    cmd="start";
+    ;;
+
+stop)
+    cmd="stop";
+    ;;
+*)
+    echo "Usage: $0 {start|stop}"
+    exit $SMF_EXIT_ERR_CONFIG
+    ;;
+esac
+
+if [ "${cmd}" = "stop" ]; then
+    ls_kill
+elif [ "${cmd}" = "start" ]; then
+    "${DAEMON}" run &
+    echo $! > "${PIDFILE}"
+fi
+
+if [ $? -ne 0 ]; then
+    echo "MQTT.Cool Server failed to start. Check logs inside: ${MC_HOME}/logs"
+    exit $SMF_EXIT_ERR_FATAL
+fi
+
+exit $SMF_EXIT_OK
